@@ -1,0 +1,677 @@
+ 0000                   cpu LMM
+                        .module main.c
+                        .area text(rom, con, rel)
+ 0000                   .dbfile ./main.c
+ 0000                   .dbfile C:\Users\iiplsb\WORKSP~1\PSOCWO~1\SERVOC~2\SERVOC~1\main.c
+ 0000                   .dbfunc e main _main fV
+ 0000           ;              j -> X+9
+ 0000           ;              i -> X+7
+ 0000           ;          width -> X+5
+ 0000           ;        servoId -> X+4
+ 0000           ;          param -> X+2
+ 0000           ;            cmd -> X+0
+ 0000           _main::
+ 0000                   .dbline -1
+ 0000 10                push X
+ 0001 4F                mov X,SP
+ 0002 380D              add SP,13
+ 0004                   .dbline 27
+ 0004           ; //----------------------------------------------------------------------------
+ 0004           ; // C main line
+ 0004           ; //----------------------------------------------------------------------------
+ 0004           ; 
+ 0004           ; #include <m8c.h>        // part specific constants and macros
+ 0004           ; #include "PSoCAPI.h"    // PSoC API definitions for all User Modules
+ 0004           ; 
+ 0004           ; #define SERVO_CH1 1
+ 0004           ; #define SERVO_CH2 2
+ 0004           ; #define SERVO_CH3 3
+ 0004           ; #define SERVO_CH4 4
+ 0004           ; #define SERVO_CH5 5
+ 0004           ; #define SERVO_CH6 6
+ 0004           ; #define SERVO_CH7 7
+ 0004           ; 
+ 0004           ; #define MAX_WIDTH 2500
+ 0004           ; #define NEUTRAL_WIDTH 1500 
+ 0004           ; #define MIN_WIDTH 500
+ 0004           ; 
+ 0004           ; #define WIDTH_TICS 11
+ 0004           ; 
+ 0004           ; void init(void);
+ 0004           ; void wait(unsigned int times);
+ 0004           ; unsigned int convertAngleToWidth(unsigned char angle);
+ 0004           ; void driveServo(unsigned char ch, unsigned int width);
+ 0004           ; 
+ 0004           ; void main(void){
+ 0004                   .dbline 34
+ 0004           ;       char *cmd;
+ 0004           ;       char *param;
+ 0004           ;       unsigned char servoId;
+ 0004           ;       unsigned int width;
+ 0004           ;       unsigned int i,j;
+ 0004           ;       
+ 0004           ;       init();
+ 0004 9126              xcall _init
+ 0006                   .dbline 36
+ 0006           ; 
+ 0006           ;       UART_1_CPutString("Boot.");
+ 0006 10                push X
+ 0007 5014              mov A,>L2
+ 0009 08                push A
+ 000A 5014              mov A,<L2
+ 000C 5C                mov X,A
+ 000D 18                pop A
+ 000E 7C0000            xcall _UART_1_CPutString
+ 0011                   .dbline 37
+ 0011           ;       UART_1_PutCRLF();
+ 0011 7C0000            xcall _UART_1_PutCRLF
+ 0014 20                pop X
+ 0015 810F              xjmp L4
+ 0017           L3:
+ 0017                   .dbline 39
+ 0017           ;       
+ 0017           ;       while(1){
+ 0017                   .dbline 40
+ 0017           ;               if(UART_1_bCmdCheck()){
+ 0017 10                push X
+ 0018 7C0000            xcall _UART_1_bCmdCheck
+ 001B 20                pop X
+ 001C 62D000            mov REG[0xd0],>__r0
+ 001F 3900              cmp A,0
+ 0021 A103              jz L6
+ 0023                   .dbline 41
+ 0023           ;                       if(cmd = UART_1_szGetParam()){
+ 0023                   .dbline 41
+ 0023 10                push X
+ 0024 7C0000            xcall _UART_1_szGetParam
+ 0027 62D000            mov REG[0xd0],>__r0
+ 002A 5300              mov [__r0],A
+ 002C 5A00              mov [__r1],X
+ 002E 20                pop X
+ 002F 5100              mov A,[__r1]
+ 0031 5401              mov [X+1],A
+ 0033 5100              mov A,[__r0]
+ 0035 5400              mov [X+0],A
+ 0037 3C0000            cmp [__r0],0
+ 003A B006              jnz X1
+ 003C 3C0000            cmp [__r1],0
+ 003F A0E0              jz L8
+ 0041           X1:
+ 0041                   .dbline 42
+ 0041           ;                               switch(*cmd){
+ 0041                   .dbline 42
+ 0041 62D000            mov REG[0xd0],>__r0
+ 0044 5201              mov A,[X+1]
+ 0046 5300              mov [__r1],A
+ 0048 5200              mov A,[X+0]
+ 004A 60D4              mov REG[0xd4],A
+ 004C 3E00              mvi A,[__r1]
+ 004E 540C              mov [X+12],A
+ 0050 560B00            mov [X+11],0
+ 0053 520C              mov A,[X+12]
+ 0055 1144              sub A,68
+ 0057 5300              mov [__rY],A
+ 0059 520B              mov A,[X+11]
+ 005B 3180              xor A,-128
+ 005D 1980              sbb A,(0 ^ 0x80)
+ 005F C0C0              jc L10
+ 0061 2A00              or A,[__rY]
+ 0063 A00D              jz L13
+ 0065           X2:
+ 0065           L20:
+ 0065 3D0B00            cmp [X+11],0
+ 0068 B006              jnz X3
+ 006A 3D0C64            cmp [X+12],100
+ 006D A003              jz L13
+ 006F           X3:
+ 006F 80B0              xjmp L10
+ 0071           L13:
+ 0071                   .dbline 45
+ 0071           ;                                       case 'd':
+ 0071           ;                                       case 'D':
+ 0071           ;                                               if(param = UART_1_szGetParam()){
+ 0071 10                push X
+ 0072 7C0000            xcall _UART_1_szGetParam
+ 0075 62D000            mov REG[0xd0],>__r0
+ 0078 5300              mov [__r0],A
+ 007A 5A00              mov [__r1],X
+ 007C 20                pop X
+ 007D 5100              mov A,[__r1]
+ 007F 5403              mov [X+3],A
+ 0081 5100              mov A,[__r0]
+ 0083 5402              mov [X+2],A
+ 0085 3C0000            cmp [__r0],0
+ 0088 B006              jnz X4
+ 008A 3C0000            cmp [__r1],0
+ 008D A092              jz L11
+ 008F           X4:
+ 008F                   .dbline 46
+ 008F           ;                                                       servoId = atoi(param);
+ 008F                   .dbline 46
+ 008F 5202              mov A,[X+2]
+ 0091 08                push A
+ 0092 5203              mov A,[X+3]
+ 0094 08                push A
+ 0095 7C0000            xcall _atoi
+ 0098 38FE              add SP,-2
+ 009A 62D000            mov REG[0xd0],>__r0
+ 009D 5100              mov A,[__r1]
+ 009F 5404              mov [X+4],A
+ 00A1                   .dbline 47
+ 00A1           ;                                                       if(param = UART_1_szGetParam()){
+ 00A1 10                push X
+ 00A2 7C0000            xcall _UART_1_szGetParam
+ 00A5 62D000            mov REG[0xd0],>__r0
+ 00A8 5300              mov [__r0],A
+ 00AA 5A00              mov [__r1],X
+ 00AC 20                pop X
+ 00AD 5100              mov A,[__r1]
+ 00AF 5403              mov [X+3],A
+ 00B1 5100              mov A,[__r0]
+ 00B3 5402              mov [X+2],A
+ 00B5 3C0000            cmp [__r0],0
+ 00B8 B006              jnz X5
+ 00BA 3C0000            cmp [__r1],0
+ 00BD A062              jz L11
+ 00BF           X5:
+ 00BF                   .dbline 48
+ 00BF           ;                                                               width = convertAngleToWidth(atoi(param));
+ 00BF                   .dbline 48
+ 00BF 5202              mov A,[X+2]
+ 00C1 08                push A
+ 00C2 5203              mov A,[X+3]
+ 00C4 08                push A
+ 00C5 7C0000            xcall _atoi
+ 00C8 38FE              add SP,-2
+ 00CA 62D000            mov REG[0xd0],>__r0
+ 00CD 5100              mov A,[__r1]
+ 00CF 08                push A
+ 00D0 90B5              xcall _convertAngleToWidth
+ 00D2 62D000            mov REG[0xd0],>__r0
+ 00D5 5100              mov A,[__r1]
+ 00D7 5406              mov [X+6],A
+ 00D9 5100              mov A,[__r0]
+ 00DB 5405              mov [X+5],A
+ 00DD                   .dbline 50
+ 00DD           ;                                                               
+ 00DD           ;                                                               driveServo(servoId, width);
+ 00DD 5205              mov A,[X+5]
+ 00DF 08                push A
+ 00E0 5206              mov A,[X+6]
+ 00E2 08                push A
+ 00E3 5204              mov A,[X+4]
+ 00E5 08                push A
+ 00E6 9109              xcall _driveServo
+ 00E8 38FC              add SP,-4
+ 00EA                   .dbline 51
+ 00EA           ;                                                               UART_1_CPutString("ServoId: ");
+ 00EA 10                push X
+ 00EB 500A              mov A,>L18
+ 00ED 08                push A
+ 00EE 500A              mov A,<L18
+ 00F0 5C                mov X,A
+ 00F1 18                pop A
+ 00F2 7C0000            xcall _UART_1_CPutString
+ 00F5 20                pop X
+ 00F6                   .dbline 52
+ 00F6           ;                                                               UART_1_PutSHexInt(servoId);
+ 00F6 62D000            mov REG[0xd0],>__r0
+ 00F9 5204              mov A,[X+4]
+ 00FB 5300              mov [__r1],A
+ 00FD 10                push X
+ 00FE 5000              mov A,0
+ 0100 08                push A
+ 0101 5100              mov A,[__r1]
+ 0103 20                pop X
+ 0104 7C0000            xcall _UART_1_PutSHexInt
+ 0107                   .dbline 53
+ 0107           ;                                                               UART_1_CPutString(", Width: ");
+ 0107 5000              mov A,>L19
+ 0109 08                push A
+ 010A 5000              mov A,<L19
+ 010C 5C                mov X,A
+ 010D 18                pop A
+ 010E 7C0000            xcall _UART_1_CPutString
+ 0111 20                pop X
+ 0112                   .dbline 54
+ 0112           ;                                                               UART_1_PutSHexInt(width);
+ 0112 10                push X
+ 0113 5205              mov A,[X+5]
+ 0115 08                push A
+ 0116 5206              mov A,[X+6]
+ 0118 20                pop X
+ 0119 7C0000            xcall _UART_1_PutSHexInt
+ 011C                   .dbline 55
+ 011C           ;                                                               UART_1_PutCRLF();
+ 011C 7C0000            xcall _UART_1_PutCRLF
+ 011F 20                pop X
+ 0120                   .dbline 56
+ 0120           ;                                                       }
+ 0120                   .dbline 57
+ 0120           ;                                               }
+ 0120                   .dbline 58
+ 0120           ;                                               break;
+ 0120           L10:
+ 0120           L11:
+ 0120                   .dbline 60
+ 0120           ;                               }
+ 0120           ;                       }
+ 0120           L8:
+ 0120                   .dbline 61
+ 0120           ;                       UART_1_CmdReset();
+ 0120 10                push X
+ 0121 7C0000            xcall _UART_1_CmdReset
+ 0124 20                pop X
+ 0125                   .dbline 62
+ 0125           ;               }
+ 0125           L6:
+ 0125                   .dbline 63
+ 0125           ;       }
+ 0125           L4:
+ 0125                   .dbline 39
+ 0125 8EF1              xjmp L3
+ 0127           X0:
+ 0127                   .dbline -2
+ 0127           L1:
+ 0127 38F3              add SP,-13
+ 0129 20                pop X
+ 012A                   .dbline 0 ; func end
+ 012A 8FFF              jmp .
+ 012C                   .dbsym l j 9 i
+ 012C                   .dbsym l i 7 i
+ 012C                   .dbsym l width 5 i
+ 012C                   .dbsym l servoId 4 c
+ 012C                   .dbsym l param 2 pc
+ 012C                   .dbsym l cmd 0 pc
+ 012C                   .dbend
+ 012C                   .dbfunc e init _init fV
+ 012C           _init::
+ 012C                   .dbline -1
+ 012C                   .dbline 66
+ 012C           ; }
+ 012C           ; 
+ 012C           ; void init(void){
+ 012C                   .dbline 67
+ 012C           ;       PWM16_1_DisableInt();
+ 012C 10                push X
+ 012D 7C0000            xcall _PWM16_1_DisableInt
+ 0130                   .dbline 68
+ 0130           ;       PWM16_1_Start();
+ 0130 7C0000            xcall _PWM16_1_Start
+ 0133                   .dbline 70
+ 0133           ; 
+ 0133           ;       PWM16_2_DisableInt();
+ 0133 7C0000            xcall _PWM16_2_DisableInt
+ 0136                   .dbline 71
+ 0136           ;       PWM16_2_Start();
+ 0136 7C0000            xcall _PWM16_2_Start
+ 0139                   .dbline 73
+ 0139           ; 
+ 0139           ;       PWM16_3_DisableInt();
+ 0139 7C0000            xcall _PWM16_3_DisableInt
+ 013C                   .dbline 74
+ 013C           ;       PWM16_3_Start();
+ 013C 7C0000            xcall _PWM16_3_Start
+ 013F                   .dbline 76
+ 013F           ; 
+ 013F           ;       PWM16_4_DisableInt();
+ 013F 7C0000            xcall _PWM16_4_DisableInt
+ 0142                   .dbline 77
+ 0142           ;       PWM16_4_Start();
+ 0142 7C0000            xcall _PWM16_4_Start
+ 0145                   .dbline 79
+ 0145           ; 
+ 0145           ;       PWM16_5_DisableInt();
+ 0145 7C0000            xcall _PWM16_5_DisableInt
+ 0148                   .dbline 80
+ 0148           ;       PWM16_5_Start();
+ 0148 7C0000            xcall _PWM16_5_Start
+ 014B                   .dbline 82
+ 014B           ; 
+ 014B           ;       PWM16_6_DisableInt();
+ 014B 7C0000            xcall _PWM16_6_DisableInt
+ 014E                   .dbline 83
+ 014E           ;       PWM16_6_Start();
+ 014E 7C0000            xcall _PWM16_6_Start
+ 0151                   .dbline 85
+ 0151           ; 
+ 0151           ;       PWM16_7_DisableInt();
+ 0151 7C0000            xcall _PWM16_7_DisableInt
+ 0154                   .dbline 86
+ 0154           ;       PWM16_7_Start();
+ 0154 7C0000            xcall _PWM16_7_Start
+ 0157                   .dbline 88
+ 0157           ; 
+ 0157           ;       UART_1_CmdReset();
+ 0157 7C0000            xcall _UART_1_CmdReset
+ 015A                   .dbline 89
+ 015A           ;       UART_1_IntCntl(UART_1_ENABLE_RX_INT);
+ 015A 5001              mov A,1
+ 015C 7C0000            xcall _UART_1_IntCntl
+ 015F                   .dbline 90
+ 015F           ;       UART_1_Start(UART_1_PARITY_NONE);
+ 015F 5000              mov A,0
+ 0161 7C0000            xcall _UART_1_Start
+ 0164 20                pop X
+ 0165                   .dbline 92
+ 0165           ;       
+ 0165           ;       M8C_EnableGInt;
+ 0165 7101                      or  F, 01h
+ 0167           
+ 0167                   .dbline -2
+ 0167           L21:
+ 0167                   .dbline 0 ; func end
+ 0167 7F                ret
+ 0168                   .dbend
+ 0168                   .dbfunc e wait _wait fV
+ 0168           ;           loop -> X+0
+ 0168           ;          times -> X-5
+ 0168           _wait::
+ 0168                   .dbline -1
+ 0168 10                push X
+ 0169 4F                mov X,SP
+ 016A 3802              add SP,2
+ 016C                   .dbline 95
+ 016C           ; }
+ 016C           ; 
+ 016C           ; void wait(unsigned int times){
+ 016C                   .dbline 97
+ 016C           ;       unsigned int loop;
+ 016C           ;       for(loop=0; loop<times; loop++);
+ 016C 560100            mov [X+1],0
+ 016F 560000            mov [X+0],0
+ 0172 8006              xjmp L26
+ 0174           L23:
+ 0174                   .dbline 97
+ 0174           L24:
+ 0174                   .dbline 97
+ 0174 7701              inc [X+1]
+ 0176 0F0000            adc [X+0],0
+ 0179           L26:
+ 0179                   .dbline 97
+ 0179 5201              mov A,[X+1]
+ 017B 13FC              sub A,[X-4]
+ 017D 5200              mov A,[X+0]
+ 017F 1BFB              sbb A,[X-5]
+ 0181 CFF2              jc L23
+ 0183           X6:
+ 0183                   .dbline -2
+ 0183           L22:
+ 0183 38FE              add SP,-2
+ 0185 20                pop X
+ 0186                   .dbline 0 ; func end
+ 0186 7F                ret
+ 0187                   .dbsym l loop 0 i
+ 0187                   .dbsym l times -5 i
+ 0187                   .dbend
+ 0187                   .dbfunc e convertAngleToWidth _convertAngleToWidth fi
+ 0187           ;          width -> X+0
+ 0187           ;          angle -> X-4
+ 0187           _convertAngleToWidth::
+ 0187                   .dbline -1
+ 0187 10                push X
+ 0188 4F                mov X,SP
+ 0189 3802              add SP,2
+ 018B                   .dbline 100
+ 018B           ; }
+ 018B           ; 
+ 018B           ; unsigned int convertAngleToWidth(unsigned char angle){
+ 018B                   .dbline 101
+ 018B           ;       unsigned int width = NEUTRAL_WIDTH;
+ 018B 5601DC            mov [X+1],-36
+ 018E 560005            mov [X+0],5
+ 0191                   .dbline 103
+ 0191           ; 
+ 0191           ;       if(angle > 180){
+ 0191 50B4              mov A,-76
+ 0193 3BFC              cmp A,[X-4]
+ 0195 D006              jnc L28
+ 0197           X7:
+ 0197                   .dbline 104
+ 0197           ;               angle = 180;
+ 0197                   .dbline 104
+ 0197 56FCB4            mov [X-4],-76
+ 019A                   .dbline 105
+ 019A           ;       }else if(angle < 0){
+ 019A 8009              xjmp L29
+ 019C           L28:
+ 019C                   .dbline 105
+ 019C 3DFC00            cmp [X-4],0
+ 019F D004              jnc L30
+ 01A1           X8:
+ 01A1                   .dbline 106
+ 01A1           ;               angle = 0;
+ 01A1                   .dbline 106
+ 01A1 56FC00            mov [X-4],0
+ 01A4                   .dbline 107
+ 01A4           ;       }
+ 01A4           L30:
+ 01A4           L29:
+ 01A4                   .dbline 109
+ 01A4           ;       
+ 01A4           ;       width = MIN_WIDTH + WIDTH_TICS * angle;
+ 01A4 62D000            mov REG[0xd0],>__r0
+ 01A7 52FC              mov A,[X-4]
+ 01A9 5300              mov [__r1],A
+ 01AB 5000              mov A,0
+ 01AD 08                push A
+ 01AE 5100              mov A,[__r1]
+ 01B0 08                push A
+ 01B1 5000              mov A,0
+ 01B3 08                push A
+ 01B4 500B              mov A,11
+ 01B6 08                push A
+ 01B7 7C0000            xcall __mul16
+ 01BA 38FC              add SP,-4
+ 01BC 5100              mov A,[__rX]
+ 01BE 5300              mov [__r1],A
+ 01C0 5100              mov A,[__rY]
+ 01C2 5300              mov [__r0],A
+ 01C4 0600F4            add [__r1],-12
+ 01C7 0E0001            adc [__r0],1
+ 01CA 5100              mov A,[__r1]
+ 01CC 5401              mov [X+1],A
+ 01CE 5100              mov A,[__r0]
+ 01D0 5400              mov [X+0],A
+ 01D2                   .dbline 111
+ 01D2           ;       
+ 01D2           ;       if(width > MAX_WIDTH){
+ 01D2 50C4              mov A,-60
+ 01D4 1301              sub A,[X+1]
+ 01D6 5009              mov A,9
+ 01D8 1B00              sbb A,[X+0]
+ 01DA D007              jnc L32
+ 01DC           X9:
+ 01DC                   .dbline 112
+ 01DC           ;               width = MAX_WIDTH;
+ 01DC                   .dbline 112
+ 01DC 5601C4            mov [X+1],-60
+ 01DF 560009            mov [X+0],9
+ 01E2                   .dbline 113
+ 01E2           ;       }
+ 01E2           L32:
+ 01E2                   .dbline 115
+ 01E2           ;       
+ 01E2           ;       return width;
+ 01E2 62D000            mov REG[0xd0],>__r0
+ 01E5 5201              mov A,[X+1]
+ 01E7 5300              mov [__r1],A
+ 01E9 5200              mov A,[X+0]
+ 01EB 5300              mov [__r0],A
+ 01ED                   .dbline -2
+ 01ED           L27:
+ 01ED 38FE              add SP,-2
+ 01EF 20                pop X
+ 01F0                   .dbline 0 ; func end
+ 01F0 7F                ret
+ 01F1                   .dbsym l width 0 i
+ 01F1                   .dbsym l angle -4 c
+ 01F1                   .dbend
+ 01F1                   .dbfunc e driveServo _driveServo fV
+ 01F1           ;          width -> X-6
+ 01F1           ;             ch -> X-4
+ 01F1           _driveServo::
+ 01F1                   .dbline -1
+ 01F1 10                push X
+ 01F2 4F                mov X,SP
+ 01F3 3802              add SP,2
+ 01F5                   .dbline 118
+ 01F5           ; }
+ 01F5           ; 
+ 01F5           ; void driveServo(unsigned char ch, unsigned int width){
+ 01F5                   .dbline 119
+ 01F5           ;       switch(ch){
+ 01F5 52FC              mov A,[X-4]
+ 01F7 5401              mov [X+1],A
+ 01F9 560000            mov [X+0],0
+ 01FC 3D0000            cmp [X+0],0
+ 01FF B006              jnz X10
+ 0201 3D0101            cmp [X+1],1
+ 0204 A03F              jz L38
+ 0206           X10:
+ 0206 3D0000            cmp [X+0],0
+ 0209 B006              jnz X11
+ 020B 3D0102            cmp [X+1],2
+ 020E A042              jz L39
+ 0210           X11:
+ 0210 3D0000            cmp [X+0],0
+ 0213 B006              jnz X12
+ 0215 3D0103            cmp [X+1],3
+ 0218 A045              jz L40
+ 021A           X12:
+ 021A 3D0000            cmp [X+0],0
+ 021D B006              jnz X13
+ 021F 3D0104            cmp [X+1],4
+ 0222 A048              jz L41
+ 0224           X13:
+ 0224 3D0000            cmp [X+0],0
+ 0227 B006              jnz X14
+ 0229 3D0105            cmp [X+1],5
+ 022C A04B              jz L42
+ 022E           X14:
+ 022E 3D0000            cmp [X+0],0
+ 0231 B006              jnz X15
+ 0233 3D0106            cmp [X+1],6
+ 0236 A04E              jz L43
+ 0238           X15:
+ 0238 3D0000            cmp [X+0],0
+ 023B B006              jnz X16
+ 023D 3D0107            cmp [X+1],7
+ 0240 A051              jz L44
+ 0242           X16:
+ 0242 805A              xjmp L35
+ 0244           L38:
+ 0244                   .dbline 121
+ 0244           ;               case SERVO_CH1:
+ 0244           ;                       PWM16_1_WritePulseWidth(width);
+ 0244 10                push X
+ 0245 52FA              mov A,[X-6]
+ 0247 08                push A
+ 0248 52FB              mov A,[X-5]
+ 024A 20                pop X
+ 024B 7C0000            xcall _PWM16_1_WritePulseWidth
+ 024E 20                pop X
+ 024F                   .dbline 122
+ 024F           ;                       break;
+ 024F 804D              xjmp L36
+ 0251           L39:
+ 0251                   .dbline 124
+ 0251           ;               case SERVO_CH2:
+ 0251           ;                       PWM16_2_WritePulseWidth(width);
+ 0251 10                push X
+ 0252 52FA              mov A,[X-6]
+ 0254 08                push A
+ 0255 52FB              mov A,[X-5]
+ 0257 20                pop X
+ 0258 7C0000            xcall _PWM16_2_WritePulseWidth
+ 025B 20                pop X
+ 025C                   .dbline 125
+ 025C           ;                       break;
+ 025C 8040              xjmp L36
+ 025E           L40:
+ 025E                   .dbline 127
+ 025E           ;               case SERVO_CH3:
+ 025E           ;                       PWM16_3_WritePulseWidth(width);
+ 025E 10                push X
+ 025F 52FA              mov A,[X-6]
+ 0261 08                push A
+ 0262 52FB              mov A,[X-5]
+ 0264 20                pop X
+ 0265 7C0000            xcall _PWM16_3_WritePulseWidth
+ 0268 20                pop X
+ 0269                   .dbline 128
+ 0269           ;                       break;
+ 0269 8033              xjmp L36
+ 026B           L41:
+ 026B                   .dbline 130
+ 026B           ;               case SERVO_CH4:
+ 026B           ;                       PWM16_4_WritePulseWidth(width);
+ 026B 10                push X
+ 026C 52FA              mov A,[X-6]
+ 026E 08                push A
+ 026F 52FB              mov A,[X-5]
+ 0271 20                pop X
+ 0272 7C0000            xcall _PWM16_4_WritePulseWidth
+ 0275 20                pop X
+ 0276                   .dbline 131
+ 0276           ;                       break;
+ 0276 8026              xjmp L36
+ 0278           L42:
+ 0278                   .dbline 133
+ 0278           ;               case SERVO_CH5:
+ 0278           ;                       PWM16_5_WritePulseWidth(width);
+ 0278 10                push X
+ 0279 52FA              mov A,[X-6]
+ 027B 08                push A
+ 027C 52FB              mov A,[X-5]
+ 027E 20                pop X
+ 027F 7C0000            xcall _PWM16_5_WritePulseWidth
+ 0282 20                pop X
+ 0283                   .dbline 134
+ 0283           ;                       break;
+ 0283 8019              xjmp L36
+ 0285           L43:
+ 0285                   .dbline 136
+ 0285           ;               case SERVO_CH6:
+ 0285           ;                       PWM16_6_WritePulseWidth(width);
+ 0285 10                push X
+ 0286 52FA              mov A,[X-6]
+ 0288 08                push A
+ 0289 52FB              mov A,[X-5]
+ 028B 20                pop X
+ 028C 7C0000            xcall _PWM16_6_WritePulseWidth
+ 028F 20                pop X
+ 0290                   .dbline 137
+ 0290           ;                       break;
+ 0290 800C              xjmp L36
+ 0292           L44:
+ 0292                   .dbline 139
+ 0292           ;               case SERVO_CH7:
+ 0292           ;                       PWM16_7_WritePulseWidth(width);
+ 0292 10                push X
+ 0293 52FA              mov A,[X-6]
+ 0295 08                push A
+ 0296 52FB              mov A,[X-5]
+ 0298 20                pop X
+ 0299 7C0000            xcall _PWM16_7_WritePulseWidth
+ 029C 20                pop X
+ 029D                   .dbline 140
+ 029D           ;                       break;
+ 029D           L35:
+ 029D           L36:
+ 029D                   .dbline -2
+ 029D           L34:
+ 029D 38FE              add SP,-2
+ 029F 20                pop X
+ 02A0                   .dbline 0 ; func end
+ 02A0 7F                ret
+ 02A1                   .dbsym l width -6 i
+ 02A1                   .dbsym l ch -4 c
+ 02A1                   .dbend
+                        .area lit(rom, con, rel, lit)
+ 0000           L19:
+ 0000 2C2057696474683A2000      .byte 44,32,'W,'i,'d,'t,'h,58,32,0
+ 000A           L18:
+ 000A 536572766F49643A2000      .byte 'S,'e,'r,'v,'o,'I,'d,58,32,0
+ 0014           L2:
+ 0014 426F6F742E00      .byte 'B,'o,'o,'t,46,0
