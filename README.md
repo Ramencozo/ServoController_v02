@@ -9,7 +9,7 @@ PSoC: CY8C29466-24PXI
 Servo Motor: 4.8V Analog RC Servo Motor
 
 
-Pin Assain:
+------Pin Assain------
 
 P1[1]: UART_RX (UART_1)
 
@@ -31,14 +31,14 @@ P2[5]: Servo06 (PWM16_6)
 P2[6]: Servo07 (PWM16_7)
 
 
-Controll Command Format: 
+------Controll Command Format------
 
 "d [ch] [degrees]" as ASCII strings
 
  //UART_1: 9600bps, Data 8bit, Start/Stop 1bit, No parity, No Flow Controll
 
 
-Controll Command Example: 
+------Controll Command Example------
 
 d 1 180   //Turn 180 degrees to the axis of the Servo01
 
